@@ -55,3 +55,12 @@ fare = np.array(pre_processing(f).fulfill_missing('Fare'))
 data_array = np.array([age, sibsp, parch, fare]).transpose()
 Mean = [pre_processing(f).mean('Age'), pre_processing(f).mean('SibSp'), pre_processing(f).mean('Parch'), pre_processing(f).mean('Fare')]
 
+class statistics_processing:
+    def __init__(self, vector_list):
+        self.vectors = vector_list
+    
+    def covariance_matrix(self):
+        self.X = np.array()
+        for num in range(len(self.vectors)):
+            self.X = np.vstack(self.X, self.vectors[num])
+        return self.X
