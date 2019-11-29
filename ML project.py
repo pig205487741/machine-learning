@@ -48,10 +48,10 @@ class pre_processing:
 
 # 只有Age, SibSp, Parch, Fare適用數值方法
 survived = pre_processing(f).transfer_to_list('Survived')
-age = pre_processing(f).fulfill_missing('Age')
-sibsp = pre_processing(f).fulfill_missing('SibSp')
-parch = pre_processing(f).fulfill_missing('Parch')
-fare = pre_processing(f).fulfill_missing('Fare')
+age = np.array(pre_processing(f).fulfill_missing('Age'))
+sibsp = np.array(pre_processing(f).fulfill_missing('SibSp'))
+parch = np.array(pre_processing(f).fulfill_missing('Parch'))
+fare = np.array(pre_processing(f).fulfill_missing('Fare'))
 data_array = np.array([age, sibsp, parch, fare]).transpose()
 Mean = [pre_processing(f).mean('Age'), pre_processing(f).mean('SibSp'), pre_processing(f).mean('Parch'), pre_processing(f).mean('Fare')]
-df = pd.DataFrame(data_array, columns=['age', 'sibsp', 'parch', 'fare'])
+
