@@ -81,6 +81,8 @@ for statement in [0,1]:
     vector_list = np.array([age-Mean[0], sibsp-Mean[1],parch-Mean[2],fare-Mean[3]])
     print(statistics_processing(vector_list).Gaussian(np.array([f['Age'][0], f['SibSp'][0], f['Parch'][0], f['Fare'][0]]))*D[statement])
 
-    
+print(pre_processing(f).class_measurement())
+print(pre_processing(f).missing_position('Age'))
+print(pre_processing(f).transfer_to_list('Sex'))
 
         
