@@ -1,0 +1,84 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import preprocessing
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn import datasets
+from sklearn.metrics import confusion_matrix
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+
+
+##讀data 我因電腦問題必須從檔案地址讀==
+titan = pd.read_csv("C:\\Users\\ohyax\\Desktop\\zz\\ML\\train.csv")
+features = titan.drop(['Survived','Name','Cabin','Ticket','PassengerId'],axis=1)
+features = pd.DataFrame(features)
+target = pd.DataFrame(titan.Survived)
+
+
+## 用最多人下岸的 "S" fillna   ,encode C,Q,S to 0,1,2
+features.Embarked = features.Embarked.fillna('S')
+le = preprocessing.LabelEncoder()
+le.fit(["C","Q","S"])
+features.Embarked =le.transform(features.Embarked)
+
+
+## use average Age to fillna
+nulls =features.Age.isnull().sum()
+ageave = features.Age.sum()/(len(features.Age)-nulls)
+features.Age = features.Age.fillna(ageave)
+
+
+## encode "Sex" female to 0 male to 1
+le = preprocessing.LabelEncoder()
+le.fit(["female","male"])
+features.Sex =le.transform(features.Sex)
+
+
+## standardlize the data
+features= preprocessing.StandardScaler().fit_transform(features)
+
+
+##perform PCA n=3
+pca = PCA(n_components=3)
+principalComponents = pca.fit_transform(features)
+principalDataframe = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2','PC3'])
+print (pca.explained_variance_ratio_ )
+
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.xlabel('number of components')
+plt.ylabel('cumulative explained variance')
+plt.show()
+
+##fit GaussianNB
+data=pd.concat([principalDataframe,target],axis=1)
+data_principalDataframe = principalDataframe.values
+data_target = target.values
+
+validation_size = 1/3
+seed = 3
+x_train, x_test, y_train, y_test = train_test_split(data_principalDataframe, data_target, test_size=validation_size, random_state=seed)
+
+model = GaussianNB()
+model.fit(x_train,np.ravel(y_train))
+
+predicted= model.predict(x_test)
+check=confusion_matrix(y_test,predicted)
+print(check)
+
+
+##此結果做出的comfusion box為
+[[155  26]
+ [ 75  41]]
+ 
+##若將'Embarked' drop 結果為
+ [[138  43]
+ [ 32  84]]   
+ ##若將'Sex' drop 結果為
+ [[150  31]
+ [ 80  36]]
+ ##若將'Embarked','Sex' drop 結果為
+ [[169  12]
+ [ 95  21]]
