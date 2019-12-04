@@ -46,21 +46,34 @@ class pre_processing:
             self.alist[P] = self.fulfill
         return self.alist
 
-# 只有Age, SibSp, Parch, Fare適用數值方法
-survived = pre_processing(f).transfer_to_list('Survived')
-age = np.array(pre_processing(f).fulfill_missing('Age'))
-sibsp = np.array(pre_processing(f).fulfill_missing('SibSp'))
-parch = np.array(pre_processing(f).fulfill_missing('Parch'))
-fare = np.array(pre_processing(f).fulfill_missing('Fare'))
-data_array = np.array([age, sibsp, parch, fare]).transpose()
-Mean = [pre_processing(f).mean('Age'), pre_processing(f).mean('SibSp'), pre_processing(f).mean('Parch'), pre_processing(f).mean('Fare')]
-
+# 貝式分類處理
 class statistics_processing:
     def __init__(self, vector_list):
         self.vectors = vector_list
     
     def covariance_matrix(self):
-        self.X = np.array()
-        for num in range(len(self.vectors)):
-            self.X = np.vstack(self.X, self.vectors[num])
+        self.X = np.dot(self.vectors, self.vectors.transpose())
         return self.X
+    
+    def determinant(self):
+        return np.linalg.det(self.covariance_matrix())
+    
+    def Gaussian(self ,training_data):
+        self.X = np.dot(training_data.transpose(),np.linalg.inv(self.covariance_matrix()))
+        self.X = np.dot(self.X, training_data)
+        expotential = math.exp((-1/2)*self.X)
+        return (1/((self.determinant()**(1/2))*((2*math.pi)**self.covariance_matrix.shape[0]/2)))*expotential
+
+# 只有Age, SibSp, Parch, Fare適用數值方法
+survived = pre_processing(f).transfer_to_list('Survived')
+age = np.array(pre_processing(f).fulfill_missing('Age'))
+sibsp = np.array(pre_processing(f).fulfill_missing('SibSp'))
+parch = np.array(pre_processing(f).fulfill_missing('Parch'))
+fare = np.array(pre_processing(f).fulfill_missing(''))
+data_array = np.array([age, sibsp, parch, fare]).transpose()
+Mean = [pre_processing(f).mean('Age'), pre_processing(f).mean('SibSp'), pre_processing(f).mean('Parch'), pre_processing(f).mean('Fare')]
+vector_list = np.array([age-Mean[0], sibsp-Mean[1],parch-Mean[2],fare-Mean[3]])
+
+    
+
+        
