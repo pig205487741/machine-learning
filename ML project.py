@@ -64,6 +64,21 @@ class statistics_processing:
         self.X = np.dot(self.X, training_data)
         expotential = math.exp((-1/2)*self.X)
         return (1/((self.determinant()**(1/2))*((2*math.pi)**np.shape(self.covariance_matrix())[0]/2)))*expotential
+    
+ class string_to_eval:
+    def __init__(self, data):
+        self.data = data
+    
+    def transfer(self, category):
+        self.result = list()
+        self.results = list()
+        for C in self.data[category]:
+            if C not in self.result:
+                self.result.append(C)
+        print(self.result)
+        for num in range(len(self.data[category])):
+            self.results.append(self.result.index(self.data[category][num]))
+        return self.results
 
 # 只有Age, SibSp, Parch, Fare適用數值方法，測試看看
 # train看看
