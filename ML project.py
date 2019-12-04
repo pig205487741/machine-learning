@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 
 f = pd.read_csv('train.csv')
+t = pd.read_csv('test.csv')
 
 # 先定義資料前處理方法
 class pre_processing:
@@ -62,17 +63,23 @@ class statistics_processing:
         self.X = np.dot(training_data.transpose(),np.linalg.inv(self.covariance_matrix()))
         self.X = np.dot(self.X, training_data)
         expotential = math.exp((-1/2)*self.X)
-        return (1/((self.determinant()**(1/2))*((2*math.pi)**self.covariance_matrix.shape[0]/2)))*expotential
+        return (1/((self.determinant()**(1/2))*((2*math.pi)**np.shape(self.covariance_matrix())[0]/2)))*expotential
 
-# 只有Age, SibSp, Parch, Fare適用數值方法
+# 只有Age, SibSp, Parch, Fare適用數值方法，測試看看
+# train看看
+'''資料操作'''
 survived = pre_processing(f).transfer_to_list('Survived')
-age = np.array(pre_processing(f).fulfill_missing('Age'))
-sibsp = np.array(pre_processing(f).fulfill_missing('SibSp'))
-parch = np.array(pre_processing(f).fulfill_missing('Parch'))
-fare = np.array(pre_processing(f).fulfill_missing(''))
-data_array = np.array([age, sibsp, parch, fare]).transpose()
-Mean = [pre_processing(f).mean('Age'), pre_processing(f).mean('SibSp'), pre_processing(f).mean('Parch'), pre_processing(f).mean('Fare')]
-vector_list = np.array([age-Mean[0], sibsp-Mean[1],parch-Mean[2],fare-Mean[3]])
+for statement in [0,1]:
+    D = {0 :549/(891+549), 1:(891-549)/(891+549) }
+    target = f[f['Survived'] == statement]
+    age = np.array(pre_processing(target).fulfill_missing('Age'))
+    sibsp = np.array(pre_processing(target).fulfill_missing('SibSp'))
+    parch = np.array(pre_processing(target).fulfill_missing('Parch'))
+    fare = np.array(pre_processing(target).fulfill_missing('Fare'))
+    data_array = np.array([age, sibsp, parch, fare]).transpose()
+    Mean = [pre_processing(target).mean('Age'), pre_processing(target).mean('SibSp'), pre_processing(target).mean('Parch'), pre_processing(target).mean('Fare')]
+    vector_list = np.array([age-Mean[0], sibsp-Mean[1],parch-Mean[2],fare-Mean[3]])
+    print(statistics_processing(vector_list).Gaussian(np.array([f['Age'][0], f['SibSp'][0], f['Parch'][0], f['Fare'][0]]))*D[statement])
 
     
 
