@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Dec  1 17:50:02 2019
+
+@author: ohyax
+"""
+import pandas as pd
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import preprocessing
+from sklearn.naive_bayes import GaussianNB
+
+
+titan = pd.read_csv("C:\\Users\\ohyax\\Desktop\\zz\\ML\\train.csv")
+titan_test = pd.read_csv("C:\\Users\\ohyax\\Desktop\\zz\\ML\\test.csv")
+
+features_train = pd.DataFrame(titan.drop(['Survived'],axis=1))
+features_test = pd.DataFrame(titan_test)
+features = pd.concat([features_train , features_test] , axis=0 )
+features = features.drop(['Name','Cabin','Ticket','PassengerId'] , axis=1 )
+features.reset_index(drop=True, inplace=True)
+
+target = pd.DataFrame(titan.Survived)
+
+## use average Age to fillna
+nulls =features.Age.isnull().sum()
+ageave = features.Age.sum()/(len(features.Age)-nulls)
+features.Age = features.Age.fillna(ageave)
+
+## use average Fare to fillna
+nulls =features.Fare.isnull().sum()
+fareave = features.Fare.sum()/(len(features.Fare)-nulls)
+features.Fare = features.Fare.fillna(fareave)
+
+## 用最多人下岸的 "S" fillna   turn C,Q,S to 0,1,2
+features.Embarked = features.Embarked.fillna('S')
+le = preprocessing.LabelEncoder()
+le.fit(["C","Q","S"])
+features.Embarked =le.transform(features.Embarked)
+
+## turn "Sex" female to 0 male to 1
+le = preprocessing.LabelEncoder()
+le.fit(["female","male"])
+features.Sex =le.transform(features.Sex)
+
+##ramdon forest feature extraction
+rf= RandomForestRegressor(random_state=1, max_depth=10)
+
+features_test_rf = features.iloc[: len(features_train)]
+
+rf.fit( features_test_rf , np.ravel(target))
+feature_importance = rf.feature_importances_
+fn = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked']
+indices = np.argsort(feature_importance[0:]) 
+
+## drop feature_importances smaller than 0.1
+cl =len(features.columns)
+for i in range (0,cl):
+
+    if feature_importance[i] < 0.1 :
+        
+        features = features.drop(features.columns[i],axis=1)
+        features = features.iloc[:, [j for j, c in enumerate(features.columns) if j != i]]
+        cl =len(features.columns)
+    if i > cl :
+        break 
+        
+
+## standardlize the data
+features= preprocessing.StandardScaler().fit_transform(features)
+
+##perform PCA
+pca = PCA(n_components=3)
+principalComponents = pca.fit_transform(features)
+principalDataframe = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2','PC3'])
+
+principalDataframe_train = principalDataframe.iloc [: len(features_train)]
+principalDataframe_test = principalDataframe.iloc [len(features_train) :]
+
+
+##fit GaussianNB
+
+data_principalDataframe_train = principalDataframe_train.values
+data_principalDataframe_test  = principalDataframe_test.values
+data_target = target.values
+
+model = GaussianNB()
+model.fit(data_principalDataframe_train ,np.ravel(data_target))
+predicted= model.predict(data_principalDataframe_test)
+
+output = pd.DataFrame({'PassengerId ' : features_test.PassengerId 
+                       ,'Survived' : predicted})
+print(output)
